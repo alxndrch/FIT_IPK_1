@@ -2,11 +2,6 @@
 from socket import *
 import sys, re
 
-"""TODO: 
-co s IPv6? inet_aton
-osetrit chybu u IP/DOMENA
-
-"""
 def parse_name(match):
     return match.split("&",1)[0].split("name=",1)[1]
 
@@ -14,8 +9,10 @@ def parse_type(match):
     return match.split("type=",1)[1]
 
 def process_get(request):
+    print(request)
 
-    match = re.match(r"^/rеsolve\?.*", request[0])
+
+    match = re.search(r"^/resolve\?.*", request[0])
     if(match == None):
         return ("400 Bad Request","")
 
@@ -28,7 +25,7 @@ def process_get(request):
 
     name = parse_name(match.group())
     print(name)
-    match = re.match(r"^&type=(A|PTR)$",match.group().split("name="+name,1)[1])
+    match = re.search(r"^&type=(A|PTR)$",match.group().split("name="+name,1)[1])
     if(match == None):
         return ("400 Bad Request","")
 
@@ -39,10 +36,20 @@ def process_get(request):
     except:
         return ("400 Bad Request","")
 
-    if(type == "A"):
-        return ("200 OK","{}:{}={}".format(name,type,addr[2][0]))
-    else:
-        return ("200 OK","{}:{}={}".format(name,type,addr[0]))
+    print("gethostbyaddr:")
+    print(addr)
+
+    try:
+        if(type == "A"):
+            if(gethostbyname(name) != name):
+                return ("200 OK","{}:{}={}".format(name,type,addr[2][0]))
+        else:
+            if(gethostbyname(name) == name):
+                return ("200 OK","{}:{}={}".format(name,type,addr[0]))
+    except:
+        pass
+
+    return ("400 Bad Request","")
 
 
 def process_post(request):
@@ -71,10 +78,15 @@ def process_post(request):
             fail_counter += 1
             continue
 
-        if(type == "A"):
-            output = output + "{}:{}={}\n".format(name,type,addr[2][0])
-        elif(type == "PTR"):
-            output = output + "{}:{}={}\n".format(name,type,addr[0])
+        try:
+            if(type == "A"):
+                if(gethostbyname(name) != name):
+                    output = output + "{}:{}={}\n".format(name,type,addr[2][0])
+            else:
+                if(gethostbyname(name) == name):
+                    output = output + "{}:{}={}\n".format(name,type,addr[0])
+        except:
+            pass
 
     if(len(data) == fail_counter):
         return ("400 Bad Request","")

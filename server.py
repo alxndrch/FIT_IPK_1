@@ -9,22 +9,19 @@ def parse_type(match):
     return match.split("type=",1)[1]
 
 def process_get(request):
-    print(request)
-
 
     match = re.search(r"^/resolve\?.*", request[0])
     if(match == None):
         return ("400 Bad Request","")
 
     params = match.group().split("?",1)[1]
-    print(params)
     match = re.search(r"^name=.*", params)
-    print(match)
+
     if(match == None):
         return ("400 Bad Request","")
 
     name = parse_name(match.group())
-    print(name)
+
     match = re.search(r"^&type=(A|PTR)$",match.group().split("name="+name,1)[1])
     if(match == None):
         return ("400 Bad Request","")
@@ -34,18 +31,15 @@ def process_get(request):
     try:
         addr = gethostbyaddr(name)
     except:
-        return ("400 Bad Request","")
-
-    print("gethostbyaddr:")
-    print(addr)
+        return ("404 Not Found","")
 
     try:
         if(type == "A"):
             if(gethostbyname(name) != name):
-                return ("200 OK","{}:{}={}".format(name,type,addr[2][0]))
+                return ("200 OK","{}:{}={}\n".format(name,type,addr[2][0]))
         else:
             if(gethostbyname(name) == name):
-                return ("200 OK","{}:{}={}".format(name,type,addr[0]))
+                return ("200 OK","{}:{}={}\n".format(name,type,addr[0]))
     except:
         pass
 
@@ -63,15 +57,30 @@ def process_post(request):
 
     output = ""
     fail_counter = 0
+    text_data = False
+    empty_line = False
+    eline_err = False
+    data_len = 0
 
     for req in data:
 
         if(req == "" or req.isspace()):
+            if(text_data == True):
+                empty_line = True
+            continue     
+        else:
+            if(empty_line == True):
+                eline_err = True
+            else:
+                text_data = True
+
+        if(eline_err == True):
             return ("400 Bad Request","")
 
         name = req.split(":",1)[0].strip()
         type = req.split(":",1)[1].strip()
 
+        data_len += 1
         try:
             addr = gethostbyaddr(name)
         except:
@@ -88,8 +97,8 @@ def process_post(request):
         except:
             pass
 
-    if(len(data) == fail_counter):
-        return ("400 Bad Request","")
+    if(data_len == fail_counter):
+        return ("404 Not Found","")
 
     return ("200 OK",output.strip())
 
@@ -127,4 +136,5 @@ try:
         connectionSocket.sendall(str.encode(msg))
         connectionSocket.close()
 except KeyboardInterrupt:
+    print("\nSERVER DISCONNECTED")
     sys.exit()

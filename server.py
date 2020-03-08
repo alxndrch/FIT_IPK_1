@@ -28,6 +28,15 @@ def process_get(request):
 
     type = parse_type(match.group())
 
+    if(type == "PTR"):
+        match = re.search(r"^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$",name)
+        if(match == None):
+            return ("400 Bad Request","")
+    else:
+        match = re.search(r"\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b",name.lower())
+        if(match == None):
+            return ("400 Bad Request","")
+
     try:
         addr = gethostbyaddr(name)
     except:
@@ -56,49 +65,39 @@ def process_post(request):
     data = request[7:]
 
     output = ""
-    fail_counter = 0
-    text_data = False
-    empty_line = False
-    eline_err = False
-    data_len = 0
+    bad_line = 0
+    data_line = 0
 
     for req in data:
+        data_line += 1
 
         if(req == "" or req.isspace()):
-            if(text_data == True):
-                empty_line = True
-            continue     
-        else:
-            if(empty_line == True):
-                eline_err = True
-            else:
-                text_data = True
-
-        if(eline_err == True):
-            return ("400 Bad Request","")
+            bad_line += 1
+            continue
 
         name = req.split(":",1)[0].strip()
         type = req.split(":",1)[1].strip()
 
-        data_len += 1
         try:
             addr = gethostbyaddr(name)
         except:
-            fail_counter += 1
+            bad_line += 1
             continue
 
         try:
             if(type == "A"):
                 if(gethostbyname(name) != name):
                     output = output + "{}:{}={}\n".format(name,type,addr[2][0])
-            else:
+            elif(type == "PTR"):
                 if(gethostbyname(name) == name):
                     output = output + "{}:{}={}\n".format(name,type,addr[0])
+            else:
+                bad_line += 1
         except:
             pass
 
-    if(data_len == fail_counter):
-        return ("404 Not Found","")
+    if(data_line == bad_line):
+        return ("400 Bad Request","")
 
     return ("200 OK",output.strip())
 

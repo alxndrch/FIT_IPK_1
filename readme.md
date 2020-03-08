@@ -1,16 +1,16 @@
 
 # Projektová dokumentace 
-#### Alexandr Chalupnik (xchalu15)
+## Alexandr Chalupnik (xchalu15)
 
 ---
 
 #### Cíl projektu
 
-Cílem projektu byla implementace severu, který bude komunikovat protokolem HTTP a bude zajišťovat překlad doménových jmen. Pro překlad jmen bude server používat lokální resolver stanice na které běží.
+Cílem projektu byla implementace serveru, který bude komunikovat protokolem HTTP a bude zajišťovat překlad doménových jmen. Pro překlad jmen bude server používat lokální resolver stanice na které běží.
 
 ### Implementace
 
-K vytvoření serveru se využíva modul `socket`(nízko-úrovňové síťové rozhraní), kterým je vytvořeno TCP spojení na lokanlní adrese na uživatelem zadaném portu.
+K vytvoření serveru se využíva modul `socket`(nízko-úrovňové síťové rozhraní), kterým je vytvořeno TCP spojení na lokalní adrese na uživatelem zadaném portu.
 
 ```python
 ...
@@ -20,7 +20,14 @@ try:
 except:
     ...
 ```
-Po vytvoření spojení, server čeká na HTTP dotazy od klienta ve specifikovaném formátu, které vyhodnocuje. K vyhodnocování obdrženého dotazu slouží modul `re`, kterým se kontroluje  správnost parametrů nebo zadané URL.
+Po vytvoření spojení, server čeká na HTTP dotazy od klienta ve specifikovaném formátu, které vyhodnocuje. K vyhodnocování správnosti obdrženého dotazu slouží modul `re`, kterým se kontroluje parametry nebo zadané domény/IP adresy.
+K samotnému vyhodnocení domén a IP adrese podle zadaného požadavku,s e používaji funkce `gethostbyaddr()` a `gethostbyname()`.
+```python
+try:
+    addr = gethostbyaddr(name)
+except:
+    return ("404 Not Found","")
+```
 Po vyhodnocení dotazu server odesílá klientovi HTTP odpověď, která obsahuje stavový kód a v případě úspěchu i obsah zprávy:
 ```
 HTTP/1.1 200 OK

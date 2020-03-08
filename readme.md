@@ -21,7 +21,8 @@ except:
     ...
 ```
 Po vytvoření spojení, server čeká na HTTP dotazy od klienta ve specifikovaném formátu, které vyhodnocuje. K vyhodnocování správnosti obdrženého dotazu slouží modul `re`, kterým se kontroluje parametry nebo zadané domény/IP adresy.
-K samotnému vyhodnocení domén a IP adrese podle zadaného požadavku,se používaji funkce `gethostbyaddr()` a `gethostbyname()`.
+K samotnému vyhodnocení domén a IP adrese podle zadaného požadavku,se používaji funkce `gethostbyaddr()` 
+a `gethostbyname()`.
 ```python
 ...
 try:

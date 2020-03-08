@@ -21,12 +21,14 @@ except:
     ...
 ```
 Po vytvoření spojení, server čeká na HTTP dotazy od klienta ve specifikovaném formátu, které vyhodnocuje. K vyhodnocování správnosti obdrženého dotazu slouží modul `re`, kterým se kontroluje parametry nebo zadané domény/IP adresy.
-K samotnému vyhodnocení domén a IP adrese podle zadaného požadavku,s e používaji funkce `gethostbyaddr()` a `gethostbyname()`.
+K samotnému vyhodnocení domén a IP adrese podle zadaného požadavku,se používaji funkce `gethostbyaddr()` a `gethostbyname()`.
 ```python
+...
 try:
     addr = gethostbyaddr(name)
 except:
     return ("404 Not Found","")
+...
 ```
 Po vyhodnocení dotazu server odesílá klientovi HTTP odpověď, která obsahuje stavový kód a v případě úspěchu i obsah zprávy:
 ```

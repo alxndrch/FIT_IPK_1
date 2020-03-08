@@ -88,9 +88,13 @@ def process_post(request):
             if(type == "A"):
                 if(gethostbyname(name) != name):
                     output = output + "{}:{}={}\n".format(name,type,addr[2][0])
+                else:
+                    bad_line += 1
             elif(type == "PTR"):
                 if(gethostbyname(name) == name):
                     output = output + "{}:{}={}\n".format(name,type,addr[0])
+                else:
+                    bad_line += 1
             else:
                 bad_line += 1
         except:
@@ -99,7 +103,7 @@ def process_post(request):
     if(data_line == bad_line):
         return ("400 Bad Request","")
 
-    return ("200 OK",output.strip())
+    return ("200 OK",output.strip()+"\n")
 
 
 if(len(sys.argv) <= 1):
